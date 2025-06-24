@@ -93,3 +93,105 @@
     token-id: token-id,
   })
 )
+
+;; Retrieve all portfolio IDs owned by a specific user
+(define-read-only (get-user-portfolios (user principal))
+  (default-to (list) (map-get? UserPortfolios user))
+)
+
+;; Calculate portfolio rebalancing requirements and status
+(define-read-only (calculate-rebalance-amounts (portfolio-id uint))
+  (let (
+      (portfolio (unwrap! (get-portfolio portfolio-id) ERR-INVALID-PORTFOLIO))
+      (total-value (get total-value portfolio))
+      (blocks-since-rebalance (- stacks-block-height (get last-rebalanced portfolio)))
+    )
+    (ok {
+      portfolio-id: portfolio-id,
+      total-value: total-value,
+      needs-rebalance: (> blocks-since-rebalance u144), ;; ~24 hours
+      blocks-since-last: blocks-since-rebalance,
+    })
+  )
+)
+
+;; Get current protocol configuration and statistics
+(define-read-only (get-protocol-info)
+  {
+    owner: (var-get protocol-owner),
+    total-portfolios: (var-get portfolio-counter),
+    protocol-fee: (var-get protocol-fee),
+    max-tokens: MAX-TOKENS-PER-PORTFOLIO,
+    max-portfolios-per-user: MAX-PORTFOLIOS-PER-USER,
+  }
+)
+
+;; PRIVATE HELPER FUNCTIONS - Internal validation and utility functions
+
+;; Validate token ID is within acceptable bounds for portfolio
+(define-private (validate-token-id
+    (portfolio-id uint)
+    (token-id uint)
+  )
+  (let ((portfolio (unwrap! (get-portfolio portfolio-id) false)))
+    (and
+      (< token-id MAX-TOKENS-PER-PORTFOLIO)
+      (< token-id (get token-count portfolio))
+      true
+    )
+  )
+)
+
+;; Ensure percentage value is within valid range (0-100%)
+(define-private (validate-percentage (percentage uint))
+  (and (>= percentage u0) (<= percentage BASIS-POINTS))
+)
+
+;; Validate that all portfolio percentages sum to exactly 100%
+(define-private (validate-portfolio-percentages (percentages (list 10 uint)))
+  (let ((total (fold + percentages u0)))
+    (and
+      (is-eq total BASIS-POINTS)
+      (fold and (map validate-percentage percentages) true)
+    )
+  )
+)
+
+;; Add new portfolio to user's ownership registry with bounds checking
+(define-private (add-to-user-portfolios
+    (user principal)
+    (portfolio-id uint)
+  )
+  (let (
+      (current-portfolios (get-user-portfolios user))
+      (new-portfolios (unwrap! (as-max-len? (append current-portfolios portfolio-id) u20)
+        ERR-USER-STORAGE-FAILED
+      ))
+    )
+    (map-set UserPortfolios user new-portfolios)
+    (ok true)
+  )
+)
+
+;; Initialize individual portfolio asset with allocation parameters
+(define-private (initialize-portfolio-asset
+    (index uint)
+    (token principal)
+    (percentage uint)
+    (portfolio-id uint)
+  )
+  (if (>= percentage u0)
+    (begin
+      (map-set PortfolioAssets {
+        portfolio-id: portfolio-id,
+        token-id: index,
+      } {
+        target-percentage: percentage,
+        current-amount: u0,
+        token-address: token,
+      })
+      (ok true)
+    )
+    ERR-INVALID-TOKEN
+  )
+)
