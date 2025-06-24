@@ -195,3 +195,105 @@
     ERR-INVALID-TOKEN
   )
 )
+
+;; Initialize all portfolio assets with unrolled loop logic for gas efficiency
+(define-private (initialize-all-assets
+    (portfolio-id uint)
+    (tokens (list 10 principal))
+    (percentages (list 10 uint))
+  )
+  (let ((token-count (len tokens)))
+    (begin
+      ;; Initialize assets at positions 2-9 (positions 0-1 handled in main function)
+      (if (> token-count u2)
+        (unwrap!
+          (initialize-portfolio-asset u2
+            (unwrap! (element-at tokens u2) ERR-INVALID-TOKEN)
+            (unwrap! (element-at percentages u2) ERR-INVALID-PERCENTAGE)
+            portfolio-id
+          )
+          ERR-INVALID-TOKEN
+        )
+        true
+      )
+      (if (> token-count u3)
+        (unwrap!
+          (initialize-portfolio-asset u3
+            (unwrap! (element-at tokens u3) ERR-INVALID-TOKEN)
+            (unwrap! (element-at percentages u3) ERR-INVALID-PERCENTAGE)
+            portfolio-id
+          )
+          ERR-INVALID-TOKEN
+        )
+        true
+      )
+      (if (> token-count u4)
+        (unwrap!
+          (initialize-portfolio-asset u4
+            (unwrap! (element-at tokens u4) ERR-INVALID-TOKEN)
+            (unwrap! (element-at percentages u4) ERR-INVALID-PERCENTAGE)
+            portfolio-id
+          )
+          ERR-INVALID-TOKEN
+        )
+        true
+      )
+      (if (> token-count u5)
+        (unwrap!
+          (initialize-portfolio-asset u5
+            (unwrap! (element-at tokens u5) ERR-INVALID-TOKEN)
+            (unwrap! (element-at percentages u5) ERR-INVALID-PERCENTAGE)
+            portfolio-id
+          )
+          ERR-INVALID-TOKEN
+        )
+        true
+      )
+      (if (> token-count u6)
+        (unwrap!
+          (initialize-portfolio-asset u6
+            (unwrap! (element-at tokens u6) ERR-INVALID-TOKEN)
+            (unwrap! (element-at percentages u6) ERR-INVALID-PERCENTAGE)
+            portfolio-id
+          )
+          ERR-INVALID-TOKEN
+        )
+        true
+      )
+      (if (> token-count u7)
+        (unwrap!
+          (initialize-portfolio-asset u7
+            (unwrap! (element-at tokens u7) ERR-INVALID-TOKEN)
+            (unwrap! (element-at percentages u7) ERR-INVALID-PERCENTAGE)
+            portfolio-id
+          )
+          ERR-INVALID-TOKEN
+        )
+        true
+      )
+      (if (> token-count u8)
+        (unwrap!
+          (initialize-portfolio-asset u8
+            (unwrap! (element-at tokens u8) ERR-INVALID-TOKEN)
+            (unwrap! (element-at percentages u8) ERR-INVALID-PERCENTAGE)
+            portfolio-id
+          )
+          ERR-INVALID-TOKEN
+        )
+        true
+      )
+      (if (> token-count u9)
+        (unwrap!
+          (initialize-portfolio-asset u9
+            (unwrap! (element-at tokens u9) ERR-INVALID-TOKEN)
+            (unwrap! (element-at percentages u9) ERR-INVALID-PERCENTAGE)
+            portfolio-id
+          )
+          ERR-INVALID-TOKEN
+        )
+        true
+      )
+      (ok true)
+    )
+  )
+)
