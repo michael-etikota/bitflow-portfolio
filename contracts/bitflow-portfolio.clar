@@ -392,3 +392,25 @@
     (ok true)
   )
 )
+
+;; PROTOCOL ADMINISTRATION - Functions for protocol governance and management
+
+;; Transfer protocol ownership to new administrator
+(define-public (transfer-ownership (new-owner principal))
+  (begin
+    (asserts! (is-eq tx-sender (var-get protocol-owner)) ERR-NOT-AUTHORIZED)
+    (asserts! (not (is-eq new-owner tx-sender)) ERR-NOT-AUTHORIZED)
+    (var-set protocol-owner new-owner)
+    (ok true)
+  )
+)
+
+;; Update protocol fee percentage
+(define-public (set-protocol-fee (new-fee uint))
+  (begin
+    (asserts! (is-eq tx-sender (var-get protocol-owner)) ERR-NOT-AUTHORIZED)
+    (asserts! (<= new-fee u500) ERR-INVALID-PERCENTAGE) ;; Max 5% fee
+    (var-set protocol-fee new-fee)
+    (ok true)
+  )
+)
